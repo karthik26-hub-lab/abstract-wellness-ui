@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Abstract - Premium Wellness</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        /* Base Dark Theme */
+        :root {
+            --bg-dark: #02040a; 
+            --text-primary: #ffffff; 
+            --text-secondary: #a1a1aa; 
+            --primary-glow: #2563eb; 
+            --accent-cyan: #00e5ff;
+            --glass-bg: rgba(255, 255, 255, 0.05); 
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.6);
+            --nav-bg: rgba(2, 4, 10, 0.75);
+            --panel-bg: rgba(2, 4, 10, 0.95);
+            --smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            --overlay-bg: rgba(2, 4, 10, 0.80);
+            --overlay-text: #ffffff;
+            --sync-1: rgba(0, 80, 255, 0.65);
+            --sync-2: rgba(0, 130, 255, 0.65);
+        }
+
+        /* Bright Theme */
+        [data-theme="light"] {
+            --bg-dark: #ffffff; 
+            --text-primary: #0f172a; 
+            --text-secondary: #475569; 
+            --primary-glow: #3b82f6; 
+            --accent-cyan: #0284c7;
+            --glass-bg: rgba(241, 245, 249, 0.85); 
+            --glass-border: rgba(15, 23, 42, 0.12); 
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --panel-bg: rgba(255, 255, 255, 0.98);
+            
+            --overlay-bg: rgba(241, 245, 249, 0.85);
+            --overlay-text: #0f172a;
+            --sync-1: rgba(147, 197, 253, 0.7);
+            --sync-2: rgba(96, 165, 250, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: #0f172a; color: var(--text-primary); overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; perspective: 1000px;}
+        [data-theme="light"] body { background-color: #e2e8f0; }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.6s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Background & Containers */
+        .bg-glow { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; opacity: 0.4; pointer-events: none; transition: var(--smooth); transform: translate3d(0,0,0); will-change: transform, opacity; }
+        .bg-glow-top { top: -100px; left: -50px; width: 300px; height: 300px; background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); }
+        .bg-glow-bottom { bottom: -100px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%); }
+        
+        .app-container { position: relative; width: 100%; max-width: 428px; height: 100vh; max-height: 926px; background: var(--bg-dark); z-index: 1; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); border-radius: 16px; transform: translate3d(0,0,0); }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--glass-shadow); transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; will-change: transform; }
+        .tilt-effect { transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); will-change: transform; }
+        .tilt-effect > * { transform: translateZ(20px); }
+
+        .tab-view { display: none; animation: fadeInUp 0.4s ease forwards; padding-bottom: 120px; }
+        .tab-view.active { display: block; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 0 24px; scrollbar-width: none; perspective: 1000px;}
+        .content-scroll::-webkit-scrollbar { display: none; }
+
+        /* Shared Components */
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 40px 24px 16px; z-index: 10; flex-shrink: 0; }
+        .profile-info { display: flex; align-items: center; gap: 12px; }
+        .profile-img { width: 48px; height: 48px; border-radius: 16px; object-fit: cover; border: 2px solid var(--glass-border); transition: border-color 0.4s ease; }
+        .greeting { font-size: 13px; color: var(--text-secondary); font-weight: 500; transition: color 0.4s ease; }
+        .user-name { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .icon-btn { width: 44px; height: 44px; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: var(--text-primary); font-size: 20px; cursor: pointer; transition: var(--smooth); background: var(--glass-bg); border: 1px solid var(--glass-border); }
+        .icon-btn:active { transform: scale(0.9); }
+        .primary-btn { background: var(--text-primary); color: var(--bg-dark); border: none; padding: 14px 24px; border-radius: 16px; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: var(--smooth); width: 100%; }
+        .primary-btn:active { transform: translateZ(10px) scale(0.95); }
+        .section-container { margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; }
+        .section-header h3 { font-size: 18px; font-weight: 600; }
+
+        /* Login Inputs */
+        .input-group { position: relative; width: 100%; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 16px; color: var(--text-secondary); font-size: 20px; transition: var(--smooth); }
+        .glass-input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px 16px 16px 48px; color: var(--text-primary); font-size: 14px; outline: none; transition: var(--smooth); font-family: inherit; }
+        .glass-input::placeholder { color: var(--text-secondary); }
+        .glass-input:focus { border-color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); }
+        .glass-input:focus + .input-icon, .glass-input:not(:placeholder-shown) + .input-icon { color: var(--accent-cyan); }
+        
+        /* --- SPA VIEWS --- */
+        .view-section { position: absolute !important; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease; overflow: hidden; border-radius: 16px;}
+        
+        /* New Intro View */
+        #intro-view { z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #intro-view.exit { opacity: 0; pointer-events: none; transform: scale(1.05); }
+        
+        #login-view { z-index: 50; display: flex; flex-direction: column; justify-content: center; padding: 24px; }
+        #login-view.exit { opacity: 0; pointer-events: none; transform: translateY(-20px) scale(0.95); }
+        
+        #dashboard-view { z-index: 10; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transform: translateY(40px) scale(0.98); }
+        #dashboard-view.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+
+        /* --- HOME TAB --- */
+        .progress-card { padding: 16px 20px; margin-top: 8px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px; transition: var(--smooth); }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; }
+        .progress-title { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .progress-points { font-size: 16px; font-weight: 700; color: var(--accent-cyan); transition: color 0.3s ease; }
+        .progress-points.highlight { color: #fcd34d; transform: scale(1.1); }
+        .progress-bar-container { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+        .progress-bar-track { flex: 1; height: 8px; background: var(--glass-border); border-radius: 4px; position: relative; overflow: hidden; transition: background-color 0.4s ease;}
+        .progress-bar-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-glow), var(--accent-cyan)); border-radius: 4px; transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+        .progress-percent { font-size: 12px; font-weight: 600; color: var(--text-primary); width: 32px; text-align: right; }
+
+        .timeline-container { position: relative; padding-left: 16px; }
+        .timeline-line { position: absolute; left: 6px; top: 16px; bottom: 32px; width: 2px; background: var(--glass-border); border-radius: 1px; transition: background-color 0.4s ease;}
+        .timeline-item { position: relative; margin-bottom: 16px; transition: var(--smooth); }
+        .timeline-dot { position: absolute; left: -14px; top: 24px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg-dark); border: 2px solid var(--accent-cyan); z-index: 2; transition: background 0.4s ease; }
+        .timeline-card { padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-left: 16px; transition: var(--smooth); }
+        .timeline-card:active { transform: scale(0.98); }
+        .timeline-info { flex: 1; }
+        .timeline-task-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; position: relative; display: inline-block; transition: color 0.4s ease; }
+        .timeline-task-title::after { content: ''; position: absolute; left: 0; top: 50%; width: 0; height: 1.5px; background: var(--text-secondary); transition: width 0.4s ease; }
+        .timeline-task-desc { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; transition: color 0.4s ease; }
+        .timeline-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--text-secondary); display: flex; justify-content: center; align-items: center; color: transparent; font-size: 14px; transition: var(--smooth); }
+        .timeline-item.completed .timeline-card { opacity: 0.6; background: transparent; border-color: transparent; box-shadow: none; }
+        .timeline-item.completed .timeline-task-title { color: var(--text-secondary); }
+        .timeline-item.completed .timeline-task-title::after { width: 100%; }
+        .timeline-item.completed .timeline-check { background: var(--accent-cyan); border-color: var(--accent-cyan); color: var(--bg-dark); }
+        .timeline-item.completed .timeline-dot { background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); border-color: var(--accent-cyan); }
+
+        /* --- DISCOVER TAB (AMBIENT MIXER) --- */
+        .hero-card { position: relative; padding: 24px; overflow: hidden; background: linear-gradient(135deg, rgba(43, 92, 255, 0.1), rgba(0, 229, 255, 0.05)); margin-top: 8px; border: 1px solid var(--glass-border); border-radius: 24px; transition: border-color 0.4s ease;}
+        .tag { display: inline-flex; align-items: center; gap: 6px; background: var(--glass-border); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; color: var(--accent-cyan); transition: background-color 0.4s ease;}
+        .mixer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .mixer-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: var(--smooth); }
+        .mixer-card.active { border-color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); }
+        .mixer-top { display: flex; justify-content: space-between; align-items: center; }
+        .mixer-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--glass-border); display: flex; justify-content: center; align-items: center; font-size: 20px; color: var(--text-secondary); transition: var(--smooth); cursor: pointer; }
+        .mixer-card.active .mixer-icon { background: rgba(0, 229, 255, 0.2); color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .mixer-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); transition: var(--smooth); }
+        .mixer-card.active .mixer-title { color: var(--text-primary); }
+        
+        [data-theme="light"] .mixer-title { color: #475569; font-weight: 700; }
+        [data-theme="light"] .mixer-icon { color: #64748b; }
+        [data-theme="light"] .mixer-card.active .mixer-title { color: var(--accent-cyan); }
+        [data-theme="light"] .mixer-card.active .mixer-icon { color: var(--accent-cyan); }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; opacity: 0.5; transition: opacity 0.3s ease; }
+        .mixer-card.active input[type=range] { opacity: 1; }
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            height: 24px; 
+            width: 24px;  
+            border-radius: 50%; 
+            background: var(--accent-cyan); 
+            background-clip: padding-box; 
+            border: 6px solid rgba(0, 229, 255, 0.25); 
+            cursor: pointer; 
+            margin-top: -10px; 
+            box-shadow: 0 0 10px var(--accent-cyan); 
+            transition: transform 0.2s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--glass-border); border-radius: 2px; transition: background-color 0.4s ease;}
+        
+        [data-theme="light"] input[type=range]::-webkit-slider-runnable-track { background: rgba(15, 23, 42, 0.15); }
+        [data-theme="light"] .timeline-line { background: rgba(15, 23, 42, 0.15); }
+        [data-theme="light"] .progress-bar-track { background: rgba(15, 23, 42, 0.10); }
+        [data-theme="light"] .valence-bar { background: rgba(15, 23, 42, 0.10); }
+        [data-theme="light"] .timeline-dot { border-color: rgba(15, 23, 42, 0.2); }
+
+        /* --- PROFILE TAB (IoT SYNC) --- */
+        .device-card { padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; transition: var(--smooth); }
+        .device-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan); display: flex; justify-content: center; align-items: center; font-size: 24px; position: relative; }
+        .pulse-indicator { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--accent-cyan); animation: heartbeat 1.5s infinite; display: none; }
+        .smart-toggle { width: 44px; height: 24px; background: var(--glass-border); border-radius: 12px; position: relative; cursor: pointer; transition: var(--smooth); }
+        .smart-toggle.active { background: var(--accent-cyan); }
+        .smart-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: var(--smooth); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .smart-toggle.active::after { left: 22px; }
+
+        /* --- STATS TAB (AI JOURNAL ANALYSIS) --- */
+        .stats-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 250; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.5s ease; display: flex; flex-direction: column; border-radius: 16px;}
+        .stats-panel.active { transform: translateY(0); }
+        .stats-header { padding: 40px 24px 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--glass-border); background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: background-color 0.4s ease, border-color 0.4s ease; border-top-left-radius: 16px; border-top-right-radius: 16px;}
+        .back-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; transition: var(--smooth);}
+        .stats-content { flex: 1; overflow-y: auto; padding: 24px; padding-bottom: 120px; scrollbar-width: none; }
+        .stats-content::-webkit-scrollbar { display: none; }
+        
+        .journal-input-box { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; margin-bottom: 16px; transition: var(--smooth); }
+        .journal-input-box textarea { width: 100%; background: transparent; border: none; color: var(--text-primary); font-size: 14px; outline: none; resize: none; height: 80px; font-family: inherit; line-height: 1.5; transition: color 0.4s ease;}
+        .journal-input-box textarea::placeholder { color: var(--text-secondary); }
+        .journal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px;}
+        .btn-small { background: var(--text-primary); color: var(--bg-dark); border: none; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: var(--smooth); }
+        .btn-ai { background: linear-gradient(135deg, var(--primary-glow), var(--accent-cyan)); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; display:flex; align-items:center; gap: 6px; cursor: pointer; }
+
+        .ai-terminal { display: none; background: #02040a; border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #34d399; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        [data-theme="light"] .ai-terminal { background: #1e293b; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .ai-terminal.active { display: block; animation: fadeInUp 0.3s ease; }
+        .terminal-line { margin-bottom: 4px; opacity: 0; animation: blinkIn 0.1s forwards; }
+        .terminal-line::before { content: '>'; color: var(--text-secondary); margin-right: 8px; }
+        
+        .ai-insights-card { display: none; background: linear-gradient(135deg, rgba(43, 92, 255, 0.05), rgba(0, 229, 255, 0.05)); border: 1px solid var(--accent-cyan); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
+        .ai-insights-card.active { display: block; animation: fadeInUp 0.5s ease; }
+        .insight-tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+        .i-tag { background: rgba(0, 229, 255, 0.15); border: 1px solid rgba(0, 229, 255, 0.3); color: var(--accent-cyan); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+        .valence-bar { width: 100%; height: 6px; border-radius: 3px; background: var(--glass-border); display:flex; overflow: hidden; margin-top: 8px; transition: background-color 0.4s ease;}
+        .valence-calm { width: 75%; background: var(--accent-cyan); }
+        .valence-stress { width: 25%; background: #f87171; }
+        
+        .past-entries { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+        .past-entry { padding: 16px; border-radius: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border); transition: var(--smooth); }
+
+        /* Floating Nav */
+        .floating-nav { position: absolute; bottom: 24px; left: 24px; right: 24px; height: 72px; border-radius: 36px; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; z-index: 100; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); transition: background-color 0.4s ease, border-color 0.4s ease; transform: translate3d(0,0,0); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); gap: 4px; width: 50px; transition: var(--smooth); cursor: pointer; }
+        .nav-item i { font-size: 22px; transition: var(--smooth); }
+        .nav-item span { font-size: 10px; font-weight: 500; opacity: 0; transform: translateY(5px); position: absolute; bottom: 8px; transition: var(--smooth); }
+        .nav-item.active { color: var(--accent-cyan); }
+        .nav-item.active i { transform: translateY(-8px); }
+        .nav-item.active span { opacity: 1; transform: translateY(0); }
+        .nav-fab-wrapper { position: relative; top: -20px; z-index: 101;}
+        .nav-fab { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-cyan), var(--primary-glow)); border: none; color: white; font-size: 24px; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(43, 92, 255, 0.4); cursor: pointer; transition: transform 0.2s ease; }
+        .nav-fab:active { transform: scale(0.9); }
+
+        /* --- CINEMATIC OVERLAYS --- */
+        .breathing-overlay { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background: var(--overlay-bg) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; z-index: 9999 !important; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; border-radius: 16px;}
+        .breathing-overlay.active { opacity: 1; pointer-events: auto; }
+        .breathing-overlay.sync-active { animation: roomLightingSync 10s infinite !important; }
+        
+        .breathe-close-btn { position: absolute; top: 32px; right: 16px; z-index: 10000; color: var(--overlay-text); background: transparent; border: none; font-size: 24px; cursor: pointer; transition: color 0.4s ease; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%;}
+        .breathe-close-btn:active { background: rgba(255,255,255,0.1); }
+        
+        .smart-sync-badge { position: absolute; top: 40px; left: 24px; font-size: 11px; color: var(--overlay-text); font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--glass-border); padding: 6px 12px; border-radius: 12px; border: 1px solid var(--glass-border); opacity: 0; transition: opacity 0.5s, color 0.4s ease; z-index: 10000;}
+        .breathing-overlay.sync-active .smart-sync-badge { opacity: 1; }
+        
+        .cinematic-orb { width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(0, 200, 255, 0.8), rgba(0, 100, 255, 0.9), transparent); box-shadow: 0 0 50px 15px rgba(0, 150, 255, 0.5), 0 0 120px 40px rgba(0, 80, 255, 0.4); transform: scale(1) translate3d(0,0,0); position: relative; will-change: transform; }
+        .breathe-text { position: absolute; bottom: 15%; font-size: 24px; font-weight: 600; letter-spacing: 2px; color: var(--overlay-text) !important; text-transform: uppercase; opacity: 0; transition: opacity 0.5s ease, color 0.4s ease; }
+        .breathe-text.visible { opacity: 1; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blinkIn { to { opacity: 1; } }
+        @keyframes pulseSlow { 0% { box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); } 50% { box-shadow: 0 8px 32px 0 rgba(0, 229, 255, 0.15); } 100% { box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); } }
+        .pulse-slow { animation: pulseSlow 4s infinite; }
+        
+        @keyframes roomLightingSync {
+            0%   { background-color: var(--overlay-bg) !important; }
+            21%  { background-color: var(--sync-1) !important; } 
+            57%  { background-color: var(--sync-2) !important; } 
+            100% { background-color: var(--overlay-bg) !important; } 
+        }
+
+        /* --- INTRO SPLASH ANIMATION --- */
+        @keyframes splashPulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(43, 92, 255, 0.2); }
+            50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(0, 229, 255, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(43, 92, 255, 0.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow bg-glow-top"></div>
+    <div class="bg-glow bg-glow-bottom"></div>
+
+    <div class="app-container">
+        
+        <!-- ====== VIEW 0: INTRO SPLASH ====== -->
+        <div id="intro-view" class="view-section">
+            <div style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, var(--accent-cyan), var(--primary-glow)); display: flex; justify-content: center; align-items: center; font-size: 40px; color: white; animation: splashPulse 2.5s ease-in-out infinite;">
+                <i class="ph-bold ph-sparkle"></i>
+            </div>
+        </div>
+
+        <!-- ====== VIEW 1: LOGIN ====== -->
+        <div id="login-view" class="view-section">
+            
+            <div class="glass tilt-effect" style="position: relative; padding: 40px 24px; text-align: center; display: flex; flex-direction: column; gap: 24px; margin: 0 auto; width: 100%; max-width: 380px;">
+                
+                <!-- Login Theme Toggle Button -->
+                <button class="icon-btn theme-toggle-btn login-theme-toggle" style="position: absolute; top: 16px; right: 16px; z-index: 100; background: transparent; border: none; box-shadow: none;">
+                    <i class="ph ph-sun"></i>
+                </button>
+
+                <!-- Branding -->
+                <div style="margin-top: 16px;">
+                    <div style="width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, var(--accent-cyan), var(--primary-glow)); display: flex; justify-content: center; align-items: center; margin: 0 auto 16px; font-size: 32px; color: white; box-shadow: 0 10px 20px rgba(43, 92, 255, 0.4);">
+                        <i class="ph-bold ph-sparkle"></i>
+                    </div>
+                    <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">Abstract</h1>
+                    <p style="font-size: 14px; color: var(--text-secondary);">Premium wellness, quantified.</p>
+                </div>
+
+                <!-- Inputs -->
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
+                    <div class="input-group">
+                        <i class="ph ph-envelope-simple input-icon"></i>
+                        <input type="email" class="glass-input" placeholder="Email address">
+                    </div>
+                    <div class="input-group">
+                        <i class="ph ph-lock-key input-icon"></i>
+                        <input type="password" class="glass-input" placeholder="Password">
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="margin-top: 8px;">
+                    <button id="login-btn" class="primary-btn" style="width: 100%; margin-bottom: 16px;">
+                        Enter Abstract <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                    <a href="#" style="font-size: 13px; color: var(--text-secondary); text-decoration: none; font-weight: 500;">Forgot password?</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== VIEW 2: DASHBOARD ====== -->
+        <div id="dashboard-view" class="view-section">
+        
+            <!-- Header -->
+            <header class="app-header">
+                <div class="profile-info">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="Profile" class="profile-img">
+                    <div>
+                        <p class="greeting" id="dynamic-greeting">Good evening,</p>
+                        <h1 class="user-name">Alya</h1>
+                    </div>
+                </div>
+                <!-- Theme Toggle Button -->
+                <button class="icon-btn theme-toggle-btn"><i class="ph ph-sun"></i></button>
+            </header>
+
+            <main class="content-scroll">
+                
+                <!-- ====== TAB 1: HOME ====== -->
+                <div id="tab-home" class="tab-view active">
+                    <section class="progress-card glass tilt-effect">
+                        <div class="progress-header">
+                            <div class="progress-title"><i class="ph-fill ph-star"></i> Mindfulness Points</div>
+                            <div class="progress-points" id="mindfulness-points-text">124</div>
+                        </div>
+                        <p class="progress-desc" style="margin-bottom: 8px;">You earned 73 points this week. Great job!</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-track"><div class="progress-bar-fill" id="mindfulness-progress" style="width: 56%;"></div></div>
+                            <div class="progress-percent" id="mindfulness-percent-text">56%</div>
+                        </div>
+                    </section>
+
+                    <section class="timeline-section">
+                        <h3 style="font-size:18px; font-weight:600; margin-bottom:16px;">Your plan for today</h3>
+                        <div class="timeline-container">
+                            <div class="timeline-line"></div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card glass timeline-clickable tilt-effect">
+                                    <div class="timeline-info">
+                                        <h4 class="timeline-task-title">Morning focus boost</h4>
+                                        <p class="timeline-task-desc"><i class="ph ph-clock"></i> 20 min • Set your mind</p>
+                                    </div>
+                                    <div class="timeline-check"><i class="ph-bold ph-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="border-color: var(--glass-border);"></div>
+                                <div class="timeline-card glass timeline-clickable tilt-effect">
+                                    <div class="timeline-info">
+                                        <h4 class="timeline-task-title">Take 5 deep breaths</h4>
+                                        <p class="timeline-task-desc"><i class="ph ph-clock"></i> 3 min • Quick reset</p>
+                                    </div>
+                                    <div class="timeline-check"><i class="ph-bold ph-check"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ====== TAB 2: DISCOVER (Ambient Mixer) ====== -->
+                <div id="tab-discover" class="tab-view">
+                    <section class="hero-card glass pulse-slow tilt-effect" style="margin-top: 0;">
+                        <span class="tag"><i class="ph-fill ph-sparkle"></i> Mindfulness in Motion</span>
+                        <h2 style="font-size:24px; font-weight:700; margin-bottom:8px;">Find your center.</h2>
+                        <p style="font-size:14px; color:var(--text-secondary); margin-bottom:16px;">Take 1 minute for a 4-7-8 breathing loop.</p>
+                        <button class="primary-btn" id="trigger-breathing">Begin Exercise <i class="ph-bold ph-wind"></i></button>
+                    </section>
+
+                    <section class="section-container" style="margin-top: 24px;">
+                        <div class="section-header">
+                            <h3>Ambient Mixer</h3>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Combine layers</span>
+                        </div>
+                        <div class="mixer-grid">
+                            <div class="mixer-card active tilt-effect" data-mixer="rain">
+                                <div class="mixer-top">
+                                    <span class="mixer-title">Rainfall</span>
+                                    <div class="mixer-icon"><i class="ph-fill ph-cloud-rain"></i></div>
+                                </div>
+                                <input type="range" min="0" max="100" value="60">
+                            </div>
+                            <div class="mixer-card active tilt-effect" data-mixer="space">
+                                <div class="mixer-top">
+                                    <span class="mixer-title">Deep Space</span>
+                                    <div class="mixer-icon"><i class="ph-fill ph-planet"></i></div>
+                                </div>
+                                <input type="range" min="0" max="100" value="30">
+                            </div>
+                            <div class="mixer-card tilt-effect" data-mixer="waves">
+                                <div class="mixer-top">
+                                    <span class="mixer-title">Ocean Waves</span>
+                                    <div class="mixer-icon"><i class="ph-fill ph-waves"></i></div>
+                                </div>
+                                <input type="range" min="0" max="100" value="50">
+                            </div>
+                            <div class="mixer-card tilt-effect" data-mixer="forest">
+                                <div class="mixer-top">
+                                    <span class="mixer-title">Forest Birds</span>
+                                    <div class="mixer-icon"><i class="ph-fill ph-tree-evergreen"></i></div>
+                                </div>
+                                <input type="range" min="0" max="100" value="50">
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ====== TAB 3: PROFILE (Smartwatch) ====== -->
+                <div id="tab-profile" class="tab-view">
+                    <section class="section-container">
+                        <div class="section-header" style="margin-bottom: 24px;"><h3>Connected Hardware</h3></div>
+                        
+                        <div class="device-card glass tilt-effect" style="border-color: var(--accent-cyan);">
+                            <div class="device-icon" style="background: rgba(0, 229, 255, 0.15);">
+                                <i class="ph-fill ph-watch"></i>
+                                <div class="pulse-indicator" style="display:block;"></div>
+                            </div>
+                            <div class="device-info">
+                                <div class="device-name">Abstract Smartwatch V2</div>
+                                <div class="device-status" style="color: var(--accent-cyan);"><i class="ph-fill ph-heartbeat"></i> Vitals Synced</div>
+                            </div>
+                        </div>
+
+                        <!-- Smart Haptics Toggle -->
+                        <div class="glass tilt-effect" style="padding: 16px 20px; border-radius: 20px; display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+                            <div>
+                                <div style="font-size: 14px; font-weight:600; margin-bottom:4px; display:flex; align-items:center; gap:6px;"><i class="ph-fill ph-vibrate" style="color:#fcd34d;"></i> Smart Haptics</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Sync breathing rhythms to watch vibration</div>
+                            </div>
+                            <div class="smart-toggle active" id="smart-env-toggle"></div>
+                        </div>
+                    </section>
+                </div>
+
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="floating-nav glass">
+                <a class="nav-item active" data-target="tab-home"><i class="ph-fill ph-house"></i><span>Home</span></a>
+                <a class="nav-item" data-target="tab-discover"><i class="ph ph-compass"></i><span>Discover</span></a>
+                <div class="nav-fab-wrapper">
+                    <!-- Clean, static FAB Button (Opens Scanner) -->
+                    <button class="nav-fab" id="main-fab"><i class="ph-bold ph-plus"></i></button>
+                </div>
+                <a class="nav-item" id="nav-stats-btn"><i class="ph ph-chart-bar"></i><span>Stats</span></a>
+                <a class="nav-item" data-target="tab-profile"><i class="ph ph-user"></i><span>Profile</span></a>
+            </nav>
+            
+            <!-- CINEMATIC BREATHING VISUALIZER -->
+            <div class="breathing-overlay" id="breathing-overlay">
+                <div class="smart-sync-badge"><i class="ph-bold ph-watch"></i> Abstract Haptics Active</div>
+                <button class="close-btn breathe-close-btn" id="close-breathe-btn"><i class="ph ph-x"></i></button>
+                <div class="cinematic-orb" id="breathe-orb"></div>
+                <div class="breathe-text" id="breathe-text">Prepare</div>
+            </div>
+
+            <!-- DEVICE SCANNER MODAL (Attached to + Button) -->
+            <div class="breathing-overlay" id="scanner-overlay" style="z-index: 600;">
+                <button class="breathe-close-btn" id="close-scanner-btn"><i class="ph ph-x"></i></button>
+                
+                <div style="position: relative; width: 200px; height: 200px; display: flex; justify-content: center; align-items: center;">
+                    <div style="position: absolute; width: 100%; height: 100%; border: 2px solid var(--accent-cyan); border-radius: 50%; opacity: 0.2; animation: pulseSlow 2s infinite;"></div>
+                    <div style="position: absolute; width: 60%; height: 60%; border: 2px solid var(--accent-cyan); border-radius: 50%; opacity: 0.5; animation: pulseSlow 2s infinite 0.5s;"></div>
+                    <div style="width: 64px; height: 64px; background: var(--accent-cyan); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--bg-dark); font-size: 32px; z-index: 10; box-shadow: 0 0 30px var(--accent-cyan);">
+                        <i class="ph-fill ph-bluetooth"></i>
+                    </div>
+                </div>
+                
+                <h3 id="scanner-text" style="color: var(--overlay-text); margin-top: 40px; font-weight: 600; letter-spacing: 1px;">Scanning for devices...</h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-top: 8px;">Keep your Abstract Smartwatch nearby.</p>
+            </div>
+
+            <!-- FULL STATS & AI JOURNAL DASHBOARD -->
+            <div class="stats-panel" id="stats-panel">
+                <div class="stats-header">
+                    <button class="back-btn" id="close-stats-btn"><i class="ph ph-arrow-left"></i></button>
+                    <h2>Insights & Journal</h2>
+                </div>
+                <div class="stats-content">
+                    
+                    <div class="journal-input-box">
+                        <textarea id="new-journal-text" placeholder="Organizing my week is intense, but the new Abstract Smartwatch is finally tracking my sleep well. Feeling a mix of exhaustion and pride."></textarea>
+                        <div class="journal-actions">
+                            <button class="btn-ai" id="analyze-ai-btn"><i class="ph-fill ph-sparkle"></i> Analyze with AI</button>
+                            <button class="btn-small" id="save-journal-btn" style="background: var(--glass-border); color: var(--text-primary);">Save Note</button>
+                        </div>
+                    </div>
+
+                    <div class="ai-terminal" id="ai-terminal"></div>
+                    
+                    <div class="ai-insights-card" id="ai-insights-card">
+                        <h4 style="font-size: 15px; font-weight: 600; display:flex; align-items:center; gap:6px;"><i class="ph-fill ph-brain" style="color:var(--accent-cyan);"></i> Session Insights</h4>
+                        <div style="margin-top: 16px;">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary);">
+                                <span>Emotional Valence</span><span>75% Positive</span>
+                            </div>
+                            <div class="valence-bar"><div class="valence-calm"></div><div class="valence-stress"></div></div>
+                        </div>
+                        <div class="insight-tags">
+                            <span class="i-tag">#ProjectMilestone</span>
+                            <span class="i-tag">#TechnicalSuccess</span>
+                            <span class="i-tag">#HighEnergy</span>
+                        </div>
+                        <div style="background: var(--glass-bg); padding: 12px; border-radius: 12px; margin-top: 16px; border-left: 2px solid var(--accent-cyan);">
+                            <p style="font-size: 12px; line-height: 1.5; color: var(--text-primary);">
+                                <span style="color:var(--accent-cyan); font-weight:600;">AI Guide:</span> You are balancing complex coordination with deep technical work. Acknowledge your hard work today—you've earned a moment of rest.
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 18px; font-weight: 600; margin-top: 32px;">Past Entries</h3>
+                    <div class="past-entries" id="journal-entries-container">
+                        <div class="past-entry tilt-effect"><div style="font-size: 11px; color: var(--accent-cyan); margin-bottom: 8px; font-weight: 600;">Friday, May 29</div><div style="font-size: 13px; line-height: 1.5;">I had a stressful meeting after a peaceful morning walk. The benefits of meditation are obvious.</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- INTRO SPLASH LOGIC ---
+            setTimeout(() => {
+                const introView = document.getElementById('intro-view');
+                if(introView) {
+                    introView.classList.add('exit');
+                    setTimeout(() => introView.style.display = 'none', 800);
+                }
+            }, 2500); // Plays for 2.5 seconds before fading out
+
+            // --- THEME TOGGLE LOGIC WITH macOS VIEW TRANSITION ---
+            const themeToggles = document.querySelectorAll('.theme-toggle-btn');
+            themeToggles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    
+                    const switchTheme = () => {
+                        document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+                        themeToggles.forEach(t => {
+                            const icon = t.querySelector('i');
+                            if (isDark) {
+                                icon.classList.remove('ph-sun');
+                                icon.classList.add('ph-moon');
+                            } else {
+                                icon.classList.remove('ph-moon');
+                                icon.classList.add('ph-sun');
+                            }
+                        });
+                    };
+
+                    if (document.startViewTransition) {
+                        document.startViewTransition(() => {
+                            switchTheme();
+                        });
+                    } else {
+                        switchTheme();
+                    }
+                });
+            });
+
+            // --- LOGIN TRANSITION LOGIC ---
+            const loginBtn = document.getElementById('login-btn');
+            const loginView = document.getElementById('login-view');
+            const dashboardView = document.getElementById('dashboard-view');
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    loginBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Authenticating...';
+                    loginBtn.style.pointerEvents = 'none'; 
+                    setTimeout(() => {
+                        loginView.classList.add('exit');
+                        dashboardView.classList.add('active');
+                        setTimeout(() => { loginView.style.display = 'none'; }, 800); 
+                    }, 800);
+                });
+            }
+
+            // --- TAB NAVIGATION ---
+            const navItems = document.querySelectorAll('.nav-item[data-target]');
+            const tabViews = document.querySelectorAll('.tab-view');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    navItems.forEach(nav => { nav.classList.remove('active'); const icon = nav.querySelector('i'); if(icon.classList.contains('ph-fill')) { icon.classList.remove('ph-fill'); icon.classList.add('ph'); } });
+                    item.classList.add('active');
+                    const activeIcon = item.querySelector('i'); activeIcon.classList.remove('ph'); activeIcon.classList.add('ph-fill');
+                    const targetId = item.getAttribute('data-target');
+                    tabViews.forEach(view => { view.classList.remove('active'); if(view.id === targetId) view.classList.add('active'); });
+                });
+            });
+
+            // --- AMBIENT MIXER LOGIC ---
+            const mixerCards = document.querySelectorAll('.mixer-card');
+            mixerCards.forEach(card => {
+                const iconBtn = card.querySelector('.mixer-icon');
+                iconBtn.addEventListener('click', () => {
+                    card.classList.toggle('active');
+                });
+            });
+
+            // --- IOT SMART ENVIRONMENT TOGGLE ---
+            const envToggle = document.getElementById('smart-env-toggle');
+            let isSmartEnvActive = true;
+            envToggle.addEventListener('click', () => {
+                isSmartEnvActive = !isSmartEnvActive;
+                envToggle.classList.toggle('active');
+            });
+
+            // --- CINEMATIC BREATHING VISUALIZER (4-7-8) ---
+            const breathingOverlay = document.getElementById('breathing-overlay');
+            const triggerBreathing = document.getElementById('trigger-breathing');
+            const closeBreatheBtn = document.getElementById('close-breathe-btn');
+            const breatheOrb = document.getElementById('breathe-orb');
+            const breatheText = document.getElementById('breathe-text');
+            let isBreathing = false;
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+            async function runBreathingLoop() {
+                breatheOrb.style.transition = 'none';
+                breatheOrb.style.transform = 'scale(1) translate3d(0,0,0)';
+                await sleep(500); 
+                while(isBreathing) {
+                    if(!isBreathing) break;
+                    breatheText.classList.remove('visible'); setTimeout(() => { breatheText.textContent = 'Inhale...'; breatheText.classList.add('visible'); }, 300);
+                    breatheOrb.style.transition = 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)';
+                    breatheOrb.style.transform = 'scale(1.8) translate3d(0,0,0)';
+                    await sleep(4000);
+                    if(!isBreathing) break;
+                    breatheText.classList.remove('visible'); setTimeout(() => { breatheText.textContent = 'Hold...'; breatheText.classList.add('visible'); }, 300);
+                    await sleep(7000);
+                    if(!isBreathing) break;
+                    breatheText.classList.remove('visible'); setTimeout(() => { breatheText.textContent = 'Exhale...'; breatheText.classList.add('visible'); }, 300);
+                    breatheOrb.style.transition = 'transform 8s ease-in-out';
+                    breatheOrb.style.transform = 'scale(1) translate3d(0,0,0)';
+                    await sleep(8000);
+                }
+            }
+
+            triggerBreathing.addEventListener('click', () => {
+                breathingOverlay.classList.add('active');
+                if(isSmartEnvActive) breathingOverlay.classList.add('sync-active');
+                isBreathing = true;
+                runBreathingLoop();
+            });
+
+            closeBreatheBtn.addEventListener('click', () => {
+                isBreathing = false;
+                breathingOverlay.classList.remove('active', 'sync-active');
+                breatheText.classList.remove('visible');
+            });
+
+            // --- PLUS BUTTON DEVICE SCANNER LOGIC ---
+            const mainFab = document.getElementById('main-fab');
+            const scannerOverlay = document.getElementById('scanner-overlay');
+            const closeScannerBtn = document.getElementById('close-scanner-btn');
+            const scannerText = document.getElementById('scanner-text');
+
+            if (mainFab && scannerOverlay) {
+                mainFab.addEventListener('click', () => {
+                    scannerText.textContent = "Scanning for devices...";
+                    scannerText.style.color = "var(--overlay-text)";
+                    scannerOverlay.classList.add('active');
+                    
+                    setTimeout(() => {
+                        if(scannerOverlay.classList.contains('active')) {
+                            scannerText.textContent = "Abstract Smartwatch V2 Found!";
+                            scannerText.style.color = "var(--accent-cyan)";
+                            
+                            setTimeout(() => {
+                                scannerOverlay.classList.remove('active');
+                            }, 2000);
+                        }
+                    }, 3000);
+                });
+
+                closeScannerBtn.addEventListener('click', () => {
+                    scannerOverlay.classList.remove('active');
+                });
+            }
+
+            // --- STATS TAB (AI JOURNAL ANALYSIS) ---
+            const statsPanel = document.getElementById('stats-panel');
+            document.getElementById('nav-stats-btn').addEventListener('click', () => statsPanel.classList.add('active'));
+            document.getElementById('close-stats-btn').addEventListener('click', () => {
+                statsPanel.classList.remove('active');
+                document.querySelectorAll('.nav-item').forEach(nav => { nav.classList.remove('active'); const icon = nav.querySelector('i'); if(icon.classList.contains('ph-fill')) { icon.classList.remove('ph-fill'); icon.classList.add('ph'); } });
+                const homeNav = document.querySelectorAll('.nav-item')[0]; homeNav.classList.add('active');
+                const homeIcon = homeNav.querySelector('i'); homeIcon.classList.remove('ph'); homeIcon.classList.add('ph-fill');
+            });
+
+            const analyzeBtn = document.getElementById('analyze-ai-btn');
+            const aiTerminal = document.getElementById('ai-terminal');
+            const aiInsightsCard = document.getElementById('ai-insights-card');
+            
+            analyzeBtn.addEventListener('click', async () => {
+                const text = document.getElementById('new-journal-text').value.trim();
+                if(!text) return;
+                
+                analyzeBtn.style.opacity = '0.5';
+                analyzeBtn.style.pointerEvents = 'none';
+                aiInsightsCard.classList.remove('active');
+                aiTerminal.innerHTML = '';
+                aiTerminal.classList.add('active');
+
+                const lines = [
+                    "Initializing NLP processor...",
+                    "Parsing emotional valence...",
+                    "Cross-referencing hardware telemetry...",
+                    "Extracting context keywords...",
+                    "Generating actionable insights..."
+                ];
+
+                for (let i = 0; i < lines.length; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'terminal-line';
+                    div.textContent = lines[i];
+                    div.style.animationDelay = `${i * 0.4}s`;
+                    aiTerminal.appendChild(div);
+                }
+
+                setTimeout(() => {
+                    aiTerminal.classList.remove('active');
+                    aiInsightsCard.classList.add('active');
+                    analyzeBtn.style.opacity = '1';
+                    analyzeBtn.style.pointerEvents = 'auto';
+                }, 2500);
+            });
+
+            // --- TIMELINE INTERACTIVITY ---
+            let currentPoints = 124; let currentProgress = 56;
+            const pointsText = document.getElementById('mindfulness-points-text');
+            const progressFill = document.getElementById('mindfulness-progress');
+            const percentText = document.getElementById('mindfulness-percent-text');
+            
+            document.querySelectorAll('.timeline-clickable').forEach(card => {
+                card.addEventListener('click', function() {
+                    const item = this.closest('.timeline-item');
+                    const isCompleted = item.classList.toggle('completed');
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => this.style.transform = 'scale(1)', 150);
+                    pointsText.classList.add('highlight'); setTimeout(() => pointsText.classList.remove('highlight'), 300);
+                    if (isCompleted) { currentPoints += 15; currentProgress = Math.min(100, currentProgress + 12); } 
+                    else { currentPoints -= 15; currentProgress = Math.max(0, currentProgress - 12); }
+                    pointsText.textContent = currentPoints;
+                    progressFill.style.width = `${currentProgress}%`;
+                    percentText.textContent = `${currentProgress}%`;
+                });
+            });
+
+            // Handle dynamic greeting setup
+            const greetingElement = document.getElementById('dynamic-greeting');
+            const hour = new Date().getHours();
+            let greetingText = 'Good evening,';
+            if (hour >= 5 && hour < 12) greetingText = 'Good morning,';
+            else if (hour >= 12 && hour < 18) greetingText = 'Good afternoon,';
+            greetingElement.textContent = greetingText;
+        });
+    </script>
+</body>
+</html>
